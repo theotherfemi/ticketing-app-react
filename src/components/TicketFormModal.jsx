@@ -1,69 +1,83 @@
-import React, { useState, useEffect } from 'react'
-import { validateTicket } from '../utils/validator'
+import React, { useState } from 'react';
 
-export default function TicketFormModal({ open, onClose, onSubmit, initial }){
-    const [form, setForm] = useState({ title: '', status: 'open', description: '', priority: 'low' })
-    const [errors, setErrors] = useState({})
+export default function TicketModalForm({ onClose, onSubmit }) {
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    status: 'Pending',
+  });
 
-    useEffect(()=>{ if(initial) setForm({...form, ...initial}) }, [initial])
-    useEffect(()=>{ if(!open) setErrors({}) }, [open])
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    const change = (k,v)=> setForm(prev => ({ ...prev, [k]: v }))
-    const save = ()=>{
-    const e = validateTicket(form)
-    setErrors(e)
-        if(Object.keys(e).length) return
-        try{ onSubmit(form); onClose(); }catch(err){ setErrors({ form: err.message }) }
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.title || !formData.description) return;
+    onSubmit(formData);
+  };
 
-    if(!open) return null
-    return (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-40">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-xl p-6">
-                <h2 className="text-xl font-semibold mb-4">{initial? 'Edit Ticket' : 'Create Ticket'}</h2>
-                {errors.form && <div className="text-red-600 mb-2">{errors.form}</div>}
-                <div className="grid grid-cols-1 gap-3">
-                    <label className="flex flex-col">
-                        <span className="text-sm font-medium">Title *</span>
-                        <input value={form.title} onChange={e=>change('title', e.target.value)} className="border p-2 rounded" />
-                        {errors.title && <div className="text-sm text-red-600">{errors.title}</div>}
-                    </label>
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white w-full max-w-md p-6 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">
+          Create New Ticket
+        </h2>
 
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-gray-700 mb-1">Title</label>
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              placeholder="Enter ticket title"
+              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
 
-                    <label className="flex flex-col">
-                        <span className="text-sm font-medium">Status *</span>
-                        <select value={form.status} onChange={e=>change('status', e.target.value)} className="border p-2 rounded">
-                            <option value="open">Open</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="closed">Closed</option>
-                        </select>
-                        {errors.status && <div className="text-sm text-red-600">{errors.status}</div>}
-                    </label>
+          <div>
+            <label className="block text-gray-700 mb-1">Description</label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Describe the issue..."
+              className="w-full border border-gray-300 rounded-lg p-3 h-24 focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
 
+          <div>
+            <label className="block text-gray-700 mb-1">Status</label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="closed">Closed</option>
+            </select>
+          </div>
 
-                    <label className="flex flex-col">
-                        <span className="text-sm font-medium">Priority</span>
-                        <select value={form.priority} onChange={e=>change('priority', e.target.value)} className="border p-2 rounded">
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                        </select>
-                    </label>
-
-
-                    <label className="flex flex-col">
-                        <span className="text-sm font-medium">Description</span>
-                        <textarea value={form.description} onChange={e=>change('description', e.target.value)} className="border p-2 rounded h-24" />
-                        {errors.description && <div className="text-sm text-red-600">{errors.description}</div>}
-                    </label>
-
-
-                    <div className="flex justify-end gap-2 mt-2">
-                        <button onClick={onClose} className="px-4 py-2">Cancel</button>
-                        <button onClick={save} className="px-4 py-2 bg-sky-600 text-white rounded">Save</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    )
+          <div className="flex justify-between mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              Create Ticket
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }

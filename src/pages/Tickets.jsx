@@ -1,45 +1,150 @@
-import React, { useState } from 'react'
-import { useTickets } from '../services/ticketService'
-import TicketCard from '../components/TicketCard'
-import TicketFormModal from '../components/TicketFormModal'
+import React, { useState, useEffect } from 'react';
+import ConfirmModal from '../components/confirmModal';
+import TicketModalForm from '../components/TicketFormModal';
+import {
+  getTickets,
+  createTicket,
+  deleteTicket,
+  updateTicket,
+} from '../services/tickets';
 
+export default function Tickets() {
+  const [tickets, setTickets] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [ticketToDelete, setTicketToDelete] = useState(null);
 
-export default function Tickets(){
-    const { tickets, create, update, remove } = useTickets()
-    const [open, setOpen] = useState(false)
-    const [editing, setEditing] = useState(null)
+  useEffect(() => {
+    setTickets(getTickets());
+  }, []);
 
+  const handleAddTicket = (ticketData) => {
+    const newTicket = createTicket(ticketData);
+    setTickets((prev) => [...prev, newTicket]);
+    setIsModalOpen(false);
+  };
 
-    const handleCreate = (data)=>{
-        create(data)
+  const handleConfirmDelete = () => {
+    if (ticketToDelete) {
+      deleteTicket(ticketToDelete);
+      setTickets((prev) => prev.filter((t) => t.id !== ticketToDelete));
+      setTicketToDelete(null);
     }
-    const handleEdit = (data)=>{
-        update(editing.id, data)
-        setEditing(null)
-    }
-    const handleDelete = (ticket)=>{
-        if(confirm('Delete this ticket?')) remove(ticket.id)
-    }
+  };
 
+  const handleStatusChange = (id, status) => {
+    updateTicket(id, { status });
+    setTickets((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, status } : t))
+    );
+  };
 
-    return (
-        <div className="py-8">
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Tickets</h1>
-                <div>
-                    <button onClick={()=>{ setEditing(null); setOpen(true) }} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">New Ticket</button>
+  // 🔹 helper for status-based styling
+  const getStatusStyles = (status) => {
+    switch (status.toLowerCase()) {
+      case 'open':
+        return {
+          card: 'border-green-200 bg-green-50',
+          tag: 'bg-green-100 text-green-700',
+        };
+      case 'in_progress':
+        return {
+          card: 'border-amber-200 bg-amber-50',
+          tag: 'bg-amber-100 text-amber-700',
+        };
+      case 'closed':
+        return {
+          card: 'border-gray-200 bg-gray-50',
+          tag: 'bg-gray-100 text-gray-600',
+        };
+      default:
+        return {
+          card: 'border-gray-200 bg-white',
+          tag: 'bg-gray-100 text-gray-700',
+        };
+    }
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-3xl font-bold text-blue-600">My Tickets</h2>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+        >
+          + New Ticket
+        </button>
+      </div>
+
+      {tickets.length === 0 ? (
+        <p className="text-center text-gray-500 mt-10">
+          No tickets yet — create one to get started!
+        </p>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {tickets.map((ticket) => {
+            const styles = getStatusStyles(ticket.status);
+            return (
+              <div
+                key={ticket.id}
+                className={`border rounded-xl shadow-sm hover:shadow-md transition p-5 ${styles.card}`}
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-semibold text-gray-800 truncate">
+                    {ticket.title}
+                  </h3>
+                  <span
+                    className={`text-xs font-medium px-3 py-1 rounded-full capitalize ${styles.tag}`}
+                  >
+                    {ticket.status.replace('_', ' ')}
+                  </span>
                 </div>
-            </div>
 
+                <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+                  {ticket.description || 'No description provided.'}
+                </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                {tickets.length === 0 ? <div className="p-6 bg-white rounded shadow">No tickets yet</div> : tickets.map(t=> (
-                    <TicketCard key={t.id} ticket={t} onEdit={(x)=>{ setEditing(x); setOpen(true) }} onDelete={handleDelete} />
-                ))}
-            </div>
+                <div className="flex justify-between items-center text-sm gap-3">
+                  <select
+                    value={ticket.status}
+                    onChange={(e) =>
+                      handleStatusChange(ticket.id, e.target.value)
+                    }
+                    className="border border-gray-300 rounded-md p-1 text-sm focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="open">Open</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="closed">Closed</option>
+                  </select>
 
-
-            <TicketFormModal open={open} initial={editing} onClose={()=>setOpen(false)} onSubmit={editing? handleEdit : handleCreate} />
+                  <button
+                    onClick={() => setTicketToDelete(ticket.id)}
+                    className="text-red-500 hover:underline text-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
-    )
+      )}
+
+      {isModalOpen && (
+        <TicketModalForm
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleAddTicket}
+        />
+      )}
+
+      {ticketToDelete && (
+        <ConfirmModal
+          message="Are you sure you want to delete this ticket?"
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setTicketToDelete(null)}
+        />
+      )}
+    </div>
+  );
 }
+
