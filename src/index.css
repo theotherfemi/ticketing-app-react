@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; }
+body { @apply bg-slate-50 text-slate-900; }
+.container-max { max-width: 1440px; margin-left: auto; margin-right: auto; }
+
+
+/* small helpers for hero circle */
+/* .hero-circle { position: absolute; border-radius: 9999px; opacity: 0.12; } */
+
+
+/* toast base */
+/* .toast {
+@apply fixed right-4 bottom-6 z-50 p-3 rounded-md shadow-lg bg-white/95 border border-slate-200;
+} */ 
+
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+
+
+.clip-wave {
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+}
