@@ -125,12 +125,16 @@ export default function Login() {
     }
 
     // ✅ Explicitly store session in localStorage for persistence
-    if (data.session) {
+    if (data?.session) {
       localStorage.setItem('ticketpro_session', JSON.stringify(data.session));
       navigate('/dashboard', { replace: true });
     } else {
       setError('Login successful but no session returned. Please refresh.');
     }
+
+    // if (data?.session) {
+  // force Supabase to refresh session in memory
+//   await supabase.auth.setSession(data.session);
   };
 
   return (
