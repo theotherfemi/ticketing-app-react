@@ -5,12 +5,10 @@ import { useEffect } from 'react';
 export default function Dashboard() {
     const navigate = useNavigate();
 
-
     const handleLogout = () => {
-    localStorage.removeItem('ticketapp_session');
-    navigate('/');
+        localStorage.removeItem('ticketapp_session');
+        navigate('/');
     };
-
 
     useEffect(() => {
     const session = localStorage.getItem('ticketapp_session');
