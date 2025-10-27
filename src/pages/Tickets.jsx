@@ -8,7 +8,6 @@ import {
   deleteTicket,
   updateTicket,
 } from '../services/tickets';
-import { useNavigate } from 'react-router-dom';
 
 export default function Tickets() {
   const [tickets, setTickets] = useState([]);
