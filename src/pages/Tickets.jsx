@@ -47,10 +47,9 @@ export default function Tickets() {
   };
 
   return (
-    <div className="w-full mx-auto px-4 py-8">
+    <div className="max-w-[1440px] w-full mx-auto px-4 py-8 min-h-screen">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold text-blue-600">My Tickets</h2>
+      <div className="flex justify-end items-center mb-6">
         <button
           onClick={() => {
             setEditingTicket(null);
@@ -64,7 +63,7 @@ export default function Tickets() {
 
       {/* Tickets Grid */}
       {tickets.length === 0 ? (
-        <p className="text-center text-gray-500 mt-10">
+        <p className="text-center text-gray-500 mt-12">
           No tickets yet — create one to get started!
         </p>
       ) : (

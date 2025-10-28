@@ -12,9 +12,9 @@ import Footer from './components/Footer';
 
 export default function App() {
   return (
-    <div className='grow max-w-[1440px] w-full mx-auto px-4'>
+    <>
       <Header />
-      <main className="">
+      <main>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/auth/login" element={<Login />} />
@@ -42,6 +42,6 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
-    </div>
+    </>
   );
 }

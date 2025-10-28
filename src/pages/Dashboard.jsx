@@ -5,15 +5,9 @@ export default function Dashboard() {
   const { logout, session } = useAuth();
 
   return (
-    <main className="w-full py-16">
+    <main className="w-full max-w-[1440px] px-4 mx-auto py-16">
       <div className="flex justify-between items-center mb-8">
-          Welcome Back, {session?.user?.email?.split('@')[0] || 'User'} 👋
-        <button
-          onClick={logout}
-          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-        >
-          Logout
-        </button>
+        Welcome Back, {session?.user?.email?.split('@')[0] || 'User'} 👋
       </div>
 
       <p className="text-gray-600 mb-12 text-center">
