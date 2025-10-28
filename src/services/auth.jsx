@@ -1,8 +1,7 @@
-// src/services/auth.jsx
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { supabase } from './supabase'; // ensure this file exports a configured supabase client
+import { supabase } from './supabase';
 
-const SESSION_KEY = 'ticketpro_session';
+const SESSION_KEY = 'ticketapp_session';
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
@@ -17,7 +16,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [initializing, setInitializing] = useState(true);
 
-  // initialize: ask supabase for current session, then subscribe to changes
   useEffect(() => {
     let mounted = true;
 
@@ -59,7 +57,6 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // explicit login wrapper
   const login = useCallback(async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
@@ -70,7 +67,6 @@ export function AuthProvider({ children }) {
     return data;
   }, []);
 
-  // explicit signup wrapper
   const signup = useCallback(async (email, password) => {
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;

@@ -10,7 +10,7 @@ export default function Header() {
 
   const doLogout = () => {
     logout();
-    nav('/auth/login');
+    nav('/');
   };
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
