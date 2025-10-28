@@ -1,22 +1,26 @@
-// src/components/ProtectedRoute.jsx
-import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../services/auth";
+// src/routes/ProtectedRoute.jsx
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../services/auth';
 
-export default function ProtectedRoute({ children }) {
-  const { session, loading } = useAuth();
+export default function ProtectedRoute({ children, redirectTo = '/auth/login' }) {
+  const { session, loading, initializing } = useAuth();
   const location = useLocation();
 
-  if (loading) {
+  // While we are restoring auth state, don't redirect — show a small loader
+  if (loading || initializing) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-gray-600 text-lg animate-pulse">Loading...</p>
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <div className="text-gray-600 animate-pulse">Checking authentication…</div>
       </div>
     );
   }
 
+  // If no session at this point, force redirect to login
   if (!session) {
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+    return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
+  // Authenticated — render child routes
   return children;
 }

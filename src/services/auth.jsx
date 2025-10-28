@@ -1,70 +1,106 @@
-// src/services/auth.js
-import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "./supabase";
+// src/services/auth.jsx
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { supabase } from './supabase'; // ensure this file exports a configured supabase client
 
+const SESSION_KEY = 'ticketpro_session';
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [session, setSession] = useState(() => {
-    // restore session from localStorage if available
-    const stored = localStorage.getItem("ticketpro_session");
-    return stored ? JSON.parse(stored) : null;
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
   });
   const [loading, setLoading] = useState(true);
+  const [initializing, setInitializing] = useState(true);
 
+  // initialize: ask supabase for current session, then subscribe to changes
   useEffect(() => {
-    // Fetch the current session from Supabase on mount
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        setSession(data.session);
-        localStorage.setItem("ticketpro_session", JSON.stringify(data.session));
+    let mounted = true;
+
+    const init = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!mounted) return;
+        if (data?.session) {
+          setSession(data.session);
+          try { localStorage.setItem(SESSION_KEY, JSON.stringify(data.session)); } catch {}
+        } else {
+          setSession(null);
+          try { localStorage.removeItem(SESSION_KEY); } catch {}
+        }
+      } catch (err) {
+        console.error('auth init error', err);
+        setSession(null);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+          setInitializing(false);
+        }
       }
-      setLoading(false);
-    });
+    };
 
-    // Listen to auth state changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    init();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
-      if (newSession)
-        localStorage.setItem("ticketpro_session", JSON.stringify(newSession));
-      else localStorage.removeItem("ticketpro_session");
+      try {
+        if (newSession) localStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
+        else localStorage.removeItem(SESSION_KEY);
+      } catch {}
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      try { listener.subscription.unsubscribe(); } catch {}
+    };
   }, []);
 
-  const login = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  // explicit login wrapper
+  const login = useCallback(async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    setSession(data.session);
-    localStorage.setItem("ticketpro_session", JSON.stringify(data.session));
+    if (data?.session) {
+      setSession(data.session);
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify(data.session)); } catch {}
+    }
     return data;
-  };
+  }, []);
 
-  const signup = async (email, password) => {
+  // explicit signup wrapper
+  const signup = useCallback(async (email, password) => {
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
-    setSession(data.session);
-    localStorage.setItem("ticketpro_session", JSON.stringify(data.session));
+    if (data?.session) {
+      setSession(data.session);
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify(data.session)); } catch {}
+    }
     return data;
-  };
+  }, []);
 
-  const logout = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
-    localStorage.removeItem("ticketpro_session");
-  };
+  const logout = useCallback(async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('signOut error', err);
+    } finally {
+      setSession(null);
+      try { localStorage.removeItem(SESSION_KEY); } catch {}
+    }
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ session, login, signup, logout, loading }}>
+    <AuthContext.Provider value={{ session, loading, initializing, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
+}

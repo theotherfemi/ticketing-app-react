@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ConfirmModal from '../components/confirmModal';
 import TicketModalForm from '../components/TicketFormModal';
-import { useNavigate } from 'react-router-dom';
 import {
   getTickets,
   createTicket,
@@ -13,18 +12,6 @@ export default function Tickets() {
   const [tickets, setTickets] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [ticketToDelete, setTicketToDelete] = useState(null);
-
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    localStorage.removeItem('ticketapp_session');
-    navigate('/');
-  };
-
-  useEffect(() => {
-    const session = localStorage.getItem('ticketapp_session');
-    if (!session) navigate('/auth/login');
-  }, [navigate]);
 
   useEffect(() => {
     setTickets(getTickets());

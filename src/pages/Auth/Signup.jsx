@@ -97,7 +97,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-2 sm:w-[600px] w-full">
+    <div className="min-h-screen flex flex-col items-center justify-center px-2 sm:w-[600px] w-full mx-auto">
       <div className="bg-white shadow-lg rounded-2xl p-8 w-full">
         <h2 className="text-3xl font-bold text-center text-blue-600 mb-6">Create an Account</h2>
         <p className="text-center text-gray-500 mb-8">Sign up to start managing your tickets</p>
