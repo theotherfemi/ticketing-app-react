@@ -26,3 +26,7 @@ body { @apply bg-slate-50 text-slate-900; }
 .clip-wave {
   clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
 }
+
+button {
+  cursor: pointer;
+}
