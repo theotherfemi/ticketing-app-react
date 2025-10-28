@@ -12,7 +12,7 @@ import Footer from './components/Footer';
 
 export default function App() {
   return (
-    <>
+    <div className='grow max-w-[1440px] w-full mx-auto px-4'>
       <Header />
       <main className="container mx-auto px-4">
         <Routes>
@@ -42,6 +42,6 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
